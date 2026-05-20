@@ -1,2 +1,16 @@
 # riscvpp
 riscvpp is a RISC-V interpreter written in C++.
+* No third party libraries
+* Cross-platform
+* No code or text from artificial intelligence
+
+## Roadmap <i>(not in order)</i>
+* Support for labels and directives (the most important one being .data and .text)
+    * One idea would be to parse the entire assembly file and build the .data and labels, and after that go line by line.
+    * Code execution starts from main or _start labels, .text or from the beggining of the file if none are present (in this order).
+* RV32I Extension* RV32IMAFDC and RV64IMAFDC
+* Make extensions 'size' independent (32/64/128)
+* Fetch/Decode/Execute/MemoryAccess/WriteBack
+* System calls
+* Transform raw strings into custom Instructions to speed up execution
+* Virtual memory
