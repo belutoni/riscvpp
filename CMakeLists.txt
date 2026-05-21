@@ -2,18 +2,22 @@ cmake_minimum_required(VERSION 4.1)
 project(riscvpp)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(riscvpp main.cpp
+add_library(riscv_core
         src/core/cpu.cpp
         include/riscvpp/core/cpu.h
         include/riscvpp/core/register.h
 )
 
-target_include_directories(riscvpp PRIVATE include)
+target_include_directories(riscv_core PUBLIC include)
+
+add_executable(riscvpp main.cpp)
+target_link_libraries(riscvpp PRIVATE riscv_core)
 
 enable_testing()
 
 add_executable(test_register tests/core/register_tests.cpp)
-add_test(NAME RegisterTest COMMAND test_register)
+target_link_libraries(test_register PRIVATE riscv_core)
 
-target_include_directories(test_register PRIVATE include)
+add_test(NAME RegisterTest COMMAND test_register)
