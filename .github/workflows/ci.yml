@@ -1,4 +1,4 @@
-name: C++23 Build and Test
+name: c++23
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-and-test:
-    name: Build & Test on ${{ matrix.os }}
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       # Set fail-fast to false to ensure all OS tests run even if one fails
