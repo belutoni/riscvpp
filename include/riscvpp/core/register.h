@@ -34,6 +34,7 @@ namespace riscvpp {
 
         constexpr T get() const noexcept { return value; }
         constexpr void set(T val) noexcept { value = val; }
+        constexpr T& get_ref() noexcept { return value; }
 
         static constexpr std::string_view get_name(RegisterId id) noexcept {
             return get_gpr_name(static_cast<size_t>(id));
@@ -68,6 +69,50 @@ namespace riscvpp {
 
             if (index >= names.size()) [[unlikely]] return "unknown";
             return names[index];
+        }
+    };
+
+    template<typename T>
+    class Registers {
+        std::array<Register<T>, 32> registers;
+
+    public:
+        class WriteHandle {
+            Register<T> *target;
+        public:
+            constexpr explicit WriteHandle(Register<T> *target) noexcept : target(target) {}
+
+            WriteHandle(const WriteHandle&) = default;
+            WriteHandle& operator=(const WriteHandle&) = delete;
+
+            constexpr void set(T val) const noexcept {
+                target->set(val);
+            }
+        };
+
+        WriteHandle operator[](size_t index) {
+            if (index >= registers.size()) [[unlikely]] {
+                throw std::out_of_range("Register index out of range!");
+            }
+
+            if (index == 0) [[unlikely]]  {
+                static Register<T> dummy_zero{0};
+                dummy_zero.set(0);
+                return WriteHandle(&dummy_zero);
+            }
+
+            return WriteHandle(&registers[index]);
+        }
+
+        constexpr T operator[](size_t index) const {
+            if (index >= registers.size()) [[unlikely]] {
+                throw std::out_of_range("Register index out of range!");
+            }
+
+            if (index == 0) {
+                return 0;
+            }
+            return registers[index].get();
         }
     };
 } // riscvpp
