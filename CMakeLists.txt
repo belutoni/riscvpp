@@ -30,8 +30,7 @@ target_link_options(riscv_core PRIVATE -fsanitize=address,undefined)
 
 target_include_directories(riscv_core PUBLIC include)
 
-add_executable(riscvpp main.cpp
-        include/riscvpp/parser/parser.h)
+add_executable(riscvpp main.cpp)
 target_link_libraries(riscvpp PRIVATE riscv_core)
 
 enable_testing()
