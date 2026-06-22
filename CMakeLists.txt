@@ -10,7 +10,6 @@ add_library(riscv_core
         include/riscvpp/core/cpu.h
         include/riscvpp/core/register.h
         include/riscvpp/core/instruction.h
-        include/riscvpp/parser/parser.h
 )
 
 target_compile_options(riscv_core PRIVATE
