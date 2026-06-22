@@ -7,22 +7,27 @@ on:
     branches: [ "main", "master" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  # CMake build type
   BUILD_TYPE: Release
 
 permissions:
   contents: read
-  actions: write # Needed so the workflow has permission to save the ccache data back to your repo
+  actions: write # Needed for ccache
 
 jobs:
   build-and-test:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      # Set fail-fast to false to ensure all OS tests run even if one fails
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            compiler_flags: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+          - os: macos-latest
+            compiler_flags: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+          - os: windows-latest
+            compiler_flags: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
     steps:
       - name: Checkout repository
@@ -34,20 +39,26 @@ jobs:
           key: ${{ matrix.os }}-${{ env.BUILD_TYPE }}
           max-size: "500M"
 
+      # Clang on Windows requires the MSVC build tools/SDK environment variables to link properly
+      # (of course Windows needs special treatment)
+      - name: Initialize MSVC Environment (Windows Only)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure CMake
-        # Configure CMake in a 'build' subdirectory with ccache enabled.
+        # -G Ninja enforces the Ninja generator across all platforms
         run: >
           cmake -B ${{github.workspace}}/build 
+          -G Ninja
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          ${{ matrix.compiler_flags }}
 
       - name: Build
-        # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
       - name: Test
         working-directory: ${{github.workspace}}/build
         # Execute tests defined by the CMake configuration.
-        # --output-on-failure ensures detailed output is printed if CTest fails.
         run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
